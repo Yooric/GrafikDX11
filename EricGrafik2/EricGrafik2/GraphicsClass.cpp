@@ -49,10 +49,23 @@ void GraphicsClass::Shutdown()
 
 bool GraphicsClass::Frame()
 {
-	return false;
+	bool result;
+
+	//renderar grafiken
+	result = Render();
+	if (!result)
+	{
+		return false;
+	}
+	return true;
 }
 
 bool GraphicsClass::Render()
 {
+	//Clear the buffers to begin scene.
+	m_Direct3D->BeginScene(0.5f, 0.5f, 0.5f, 1.0f);
+	//visa the rendereed scen till skärmfan
+	m_Direct3D->EndScene();
+
 	return true;
 }

@@ -1,7 +1,7 @@
 #pragma once
 #ifndef _GRAPHICSCLASS_H_
 #define _GRAPHICSCLASS_H_
-
+#include "windows.h"
 #include "d3dclass.h"
 
 const bool FULL_SCREEN = false;
