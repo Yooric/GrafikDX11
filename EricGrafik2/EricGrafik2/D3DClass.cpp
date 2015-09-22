@@ -170,7 +170,7 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight,
 	// Set regular 32-bit surface for the back buffer.
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-
+	int hej = 0;
 
 	return false;
 }
