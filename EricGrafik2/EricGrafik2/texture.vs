@@ -1,33 +1,34 @@
-
-//Tydligen Globals, Man kommer åt dem från c++koden OFCörse
+///Globaler
 cbuffer MatrixBuffer
 {
-	matrix worldMatrix;
+	matrix worldMatrix
 	matrix viewMatrix;
 	matrix projectionMatrix;
-};
+}
 
-////Typedefs
+//typdefs
 struct VertexInputType
 {
 	float4 position : POSITION;
-	float4 color : COLOR;
-};
-struct PixelInputType
+	float2 tex : TEXCOORD0;
+}
+
+struct PixelInput
 {
 	float4 position : SV_POSITION;
-	float4 color : COLOR;
-};
+	float2 tex : TEXCOORD0;
+}
 
-
-//VertexShader
-PixelInputType ColorVertexShader(VertexInputType input)
+//VertexCheddarn
+PixelInputType TextureVertexShader(VertexInputType input)
 {
 	PixelInputType output;
+	//behöver ett fjärde värde på position för matrix calculations
 	input.position.w = 1.0f;
+
 	output.position = mul(input.position, worldMatrix);
 	output.position = mul(output.position, viewMatrix);
 	output.position = mul(output.position, projectionMatrix);
-	output.color = input.color;
-	return output;
+
+	output.tex = input.tex;
 }
