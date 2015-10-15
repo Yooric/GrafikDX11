@@ -6,6 +6,7 @@ ModelClass::ModelClass()
 {
 	m_vertexBuffer = 0;
 	m_indexBuffer = 0;
+	m_Texture = 0;
 }
 
 ModelClass::ModelClass(const ModelClass &)
@@ -17,19 +18,29 @@ ModelClass::~ModelClass()
 {
 }
 
-bool ModelClass::Initialize(ID3D11Device* p_Device)
+bool ModelClass::Initialize(ID3D11Device* p_device, ID3D11DeviceContext* p_deviceContext, char* p_textureFilename)
 {
 	bool t_Result;
-	t_Result = InitializeBuffers(p_Device);
+	t_Result = InitializeBuffers(p_device);
 	if (!t_Result)
 	{
 		return false;
 	}
+
+
+	//ladda texturen va
+	t_Result = LoadTexture(p_device, p_deviceContext, p_textureFilename);
+	if (!t_Result)
+	{
+		return false;
+	}
+
 	return true;
 }
 
 void ModelClass::Shutdown()
 {
+	ReleaseTexture();
 	ShutdownBuffers();
 }
 
@@ -39,9 +50,40 @@ void ModelClass::Render(ID3D11DeviceContext* p_DeviceContext)
 	RenderBuffers(p_DeviceContext);
 }
 
+ID3D11ShaderResourceView * ModelClass::GetTexture()
+{
+	return m_Texture->GetTexture();
+}
+
 int ModelClass::GetIndexCount()
 {
 	return m_indexCount;
+}
+
+bool ModelClass::LoadTexture(ID3D11Device* p_device, ID3D11DeviceContext* p_deviceContext, char* p_filename)
+{
+	bool t_result;
+	m_Texture = new TextureClass;
+	if (!m_Texture)
+	{
+		return false;
+	}
+	t_result = m_Texture->Initialize(p_device, p_deviceContext, p_filename);
+	if (!t_result)
+	{
+		return false;
+	}
+	return true;
+}
+
+void ModelClass::ReleaseTexture()
+{
+	if (m_Texture)
+	{
+		m_Texture->Shutdown();
+		delete m_Texture;
+		m_Texture = 0;
+	}
 }
 
 bool ModelClass::InitializeBuffers(ID3D11Device* p_Device)
@@ -74,18 +116,28 @@ bool ModelClass::InitializeBuffers(ID3D11Device* p_Device)
 		return false;
 	}
 
+	///om man vill göra en model utan texturer använder man den andra structen VertexTypeWithoutTex
 	// Load the vertex array with data.
+	//t_Vertices[0].position = XMFLOAT3(-1.0f, -1.0f, 0.0f);  // Bottom left.
+	//t_Vertices[0].color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+
+	//t_Vertices[1].position = XMFLOAT3(-1.0f, 1.0f, 0.0f);  // Top Left.
+	//t_Vertices[1].color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+
+	//t_Vertices[2].position = XMFLOAT3(1.0f, -1.0f, 0.0f);  // Bottom right.
+	//t_Vertices[2].color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+
+	//t_Vertices[3].position = XMFLOAT3(1.0f, 1.0f, 0.0f);  // Top right.
+	//t_Vertices[3].color = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+	
 	t_Vertices[0].position = XMFLOAT3(-1.0f, -1.0f, 0.0f);  // Bottom left.
-	t_Vertices[0].color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	t_Vertices[0].texture = XMFLOAT2(0.0f, 1.0f);
 
 	t_Vertices[1].position = XMFLOAT3(-1.0f, 1.0f, 0.0f);  // Top Left.
-	t_Vertices[1].color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	t_Vertices[1].texture = XMFLOAT2(0.5f, 0.0f);
 
 	t_Vertices[2].position = XMFLOAT3(1.0f, -1.0f, 0.0f);  // Bottom right.
-	t_Vertices[2].color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-
-	t_Vertices[3].position = XMFLOAT3(1.0f, 1.0f, 0.0f);  // Top right.
-	t_Vertices[3].color = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+	t_Vertices[2].texture = XMFLOAT2(1.0f, 1.0f);
 
 
 

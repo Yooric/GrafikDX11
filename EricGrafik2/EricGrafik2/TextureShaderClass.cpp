@@ -38,11 +38,11 @@ void TextureShaderClass::Shutdown()
 	ShutdownShader();
 }
 
-bool TextureShaderClass::Render(ID3D11DeviceContext* p_DeviceContext, int p_IndexCount, XMMATRIX p_WorldMatrix, XMMATRIX p_ViewMatrix,
-	XMMATRIX p_ProjectionMatrix, ID3D11ShaderResourceView* p_Texture)
+bool TextureShaderClass::Render(ID3D11DeviceContext* p_DeviceContext, int p_IndexCount, XMFLOAT4X4 p_World4x4, XMFLOAT4X4 p_View4x4,
+	XMFLOAT4X4 p_Projection4x4, ID3D11ShaderResourceView* p_Texture)
 {
 	bool t_Result;
-	t_Result = SetShaderParameters(p_DeviceContext, p_WorldMatrix, p_ViewMatrix, p_ProjectionMatrix, p_Texture);
+	t_Result = SetShaderParameters(p_DeviceContext, p_World4x4, p_View4x4, p_Projection4x4, p_Texture);
 	if (!t_Result)
 	{
 		return false;
@@ -257,18 +257,18 @@ void TextureShaderClass::OutputShaderErrorMessage(ID3D10Blob* p_ErrorMessage, HW
 
 }
 
-bool TextureShaderClass::SetShaderParameters(ID3D11DeviceContext* p_DeviceContext, XMMATRIX p_WorldMatrix, XMMATRIX p_ViewMatrix,
-	XMMATRIX p_ProjectionMatrix, ID3D11ShaderResourceView* p_Texture)
+bool TextureShaderClass::SetShaderParameters(ID3D11DeviceContext* p_DeviceContext, XMFLOAT4X4 p_World4x4, XMFLOAT4X4 p_View4x4,
+	XMFLOAT4X4 p_Projection4x4, ID3D11ShaderResourceView* p_Texture)
 {
 	HRESULT t_Result;
 	D3D11_MAPPED_SUBRESOURCE t_MappedResource;
 	MatrixBufferType* t_DataPtr;
 	unsigned int t_BufferNumber;
-
+	XMMATRIX p_WorldMatrix, p_ViewMatrix, p_ProjectionMatrix;
 	//Transposa matriserna för cheddarn
-	p_WorldMatrix = XMMatrixTranspose(p_WorldMatrix);
-	p_ViewMatrix = XMMatrixTranspose(p_ViewMatrix);
-	p_ProjectionMatrix = XMMatrixTranspose(p_ProjectionMatrix);
+	p_WorldMatrix = XMMatrixTranspose(XMLoadFloat4x4(&p_World4x4));
+	p_ViewMatrix = XMMatrixTranspose(XMLoadFloat4x4(&p_View4x4));
+	p_ProjectionMatrix = XMMatrixTranspose(XMLoadFloat4x4(&p_Projection4x4));
 
 	t_Result = p_DeviceContext->Map(m_MatrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &t_MappedResource);
 	if (FAILED(t_Result))

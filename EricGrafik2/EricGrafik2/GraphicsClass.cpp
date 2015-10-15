@@ -9,6 +9,7 @@ GraphicsClass::GraphicsClass()
 	m_Camera = 0;
 	m_Model = 0;
 	m_ColorShader = 0;
+	m_TextureShader = 0;
 }
 
 GraphicsClass::GraphicsClass(const GraphicsClass &)
@@ -53,12 +54,14 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 	//initar model
-	result = m_Model->Initialize(m_Direct3D->GetDevice());
+	result = m_Model->Initialize(m_Direct3D->GetDevice(), m_Direct3D->GetDeviceContext(), "stone01.tga");//4123
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the model object hoppas denna kommer nogon gang", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the model object. =D", L"ERROR", MB_OK);
 		return false;
 	}
+	
+
 	//create the color cheddar object
 	m_ColorShader = new ColorShaderClass;
 	if (!m_ColorShader)
@@ -72,6 +75,20 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		MessageBox(hwnd, L"Could NOt initialize the color shader object", L"Error", MB_OK);
 	}
 
+	// Create the texture shader object.
+	m_TextureShader = new TextureShaderClass;
+	if (!m_TextureShader)
+	{
+		return false;
+	}
+
+	// Initialize the color shader object.
+	result = m_TextureShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the color shader object.", L"Error", MB_OK);
+		return false;
+	}
 
 
 
@@ -81,6 +98,13 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 void GraphicsClass::Shutdown()
 {
+
+	if (m_TextureShader)
+	{
+		m_TextureShader->Shutdown();
+		delete m_TextureShader;
+		m_TextureShader = 0;
+	}
 	//realeasra color shader object
 	if (m_ColorShader)
 	{
@@ -154,12 +178,20 @@ bool GraphicsClass::Render()
 	XMStoreFloat4x4(&t_World4x4, t_WorldMatrix);
 	XMStoreFloat4x4(&t_View4x4, t_ViewMatrix);
 	XMStoreFloat4x4(&t_Projection4x4, t_ProjectionMatrix);
-
-	t_Result = m_ColorShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(), t_World4x4, t_View4x4, t_Projection4x4);
+		/// om man vill rendera utan Texturer
+	//t_Result = m_ColorShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(), t_World4x4, t_View4x4, t_Projection4x4);
+	//if (!t_Result)
+	//{
+	//	return false;
+	//}
+	t_Result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_Model->GetIndexCount(), t_World4x4, t_View4x4, t_Projection4x4, m_Model->GetTexture());
 	if (!t_Result)
 	{
 		return false;
 	}
+
+
+
 
 	//visa the rendereed scen till skärmfan
 	m_Direct3D->EndScene();
